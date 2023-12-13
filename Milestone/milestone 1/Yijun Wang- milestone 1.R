@@ -1,0 +1,96 @@
+#Print the name at the top of the script
+paste("Yijun Wang")
+
+#Import libraries
+install.packages("dplyr")
+library(dplyr)
+install.packages("ggplot2")
+library(ggplot2)
+install.packages("tidyr")
+library(tidyr)
+install.packages("plotly")
+library(plotly)
+install.packages("plotrix")
+library(plotrix)
+install.packages("scales")
+library(scales)
+install.packages("stringr")
+library(stringr)
+install.packages("plyr")
+library(plyr)
+
+#Import the csv file and rename to Movie
+df <- read.csv("C:\\Users\\junni\\Desktop\\movies.csv",header= TRUE)
+
+#dim
+dim(df)
+
+#string 
+str(df)
+
+#Remove /100 from Rotten Tomatoes and /10 from IMDb
+df$Rotten.Tomatoes <- substring(df$Rotten.Tomatoes,0,2)
+df$IMDb <- substring(df$IMDb,0,3)
+head(df)
+
+#conver to number
+df$IMDb= as.numeric(df$IMDb)
+df$Rotten.Tomatoes= as.numeric(df$Rotten.Tomatoes)
+class(df$IMDb)
+class(df$Rotten.Tomatoes )
+
+#summary
+summary(df)
+
+#1. which platforms has the highest number of Movies titles
+sum1 <- sum(df$Netflix)
+sum2 <- sum(df$Hulu)
+sum3 <- sum(df$Prime.Video)
+sum4 <- sum(df$Disney.)
+
+slices <- c(sum1,sum2,sum3,sum4)
+lbls <- c("Netflix", "Hulu", "Prime.Video", "Disney")
+pct <- round(slices/sum(slices)*100)
+lbls <- paste(lbls, pct)
+lbls <- paste(lbls,"%",sep= "")
+colors <- c("#61799b", "#9daccb", "#ab594b", "#ffdba7")
+pie3D(slices,labels= lbls,explode= 0.1,col= colors,
+      main= "Pie Chart of Platforms ")
+
+#Changing the data from wide to longer format
+df <- gather(df, Service, Value, Netflix:Disney.)%>%
+  filter(Value == 1)%>%
+  select(-Value)
+
+#2. How much is played on various platforms at various ages?
+df$Age[df$Age==""] <- NA
+ggplot(data = df, aes(x = Age)) +
+  ggtitle("Different Age on Platforms")+
+  geom_bar(aes(fill = Service), position = "dodge")+ 
+  scale_fill_manual(values=c("#999999", "#E69F00","#ab594b","#61799b"))
+  
+
+#3. histogra of Rotten.Tomatioes on different Platforms
+ggplot(df, aes(x=Rotten.Tomatoes))+
+  geom_histogram(color="black", fill="white",bins = 30)+
+  facet_grid(Service ~ .)+
+  ggtitle("Rotten.Tomatioes on Platforms")
+
+#4.histogra of IMDb on different Platforms
+ggplot(df, aes(x=IMDb))+
+   geom_histogram(color="black", fill="white",bins = 30)+
+   facet_grid(Service ~ .)+
+   ggtitle("IMDb on Platforms")
+
+#5. Year
+g<- ggplot(df, aes(x=Year, color=Service)) +
+  geom_density()+
+  labs(title="Weight density curve",x="Weight(kg)", y = "Density")
+g + scale_color_manual(values=c("#999999", "#E69F00", "#ab594b","#c9e7ff"))+
+  theme_minimal()
+
+#Part 2
+#a. The mean of IMDb is equal to 6.5 or not equal to 6.5
+t.test(df$IMDb,alternative="two.sided", Var.equal=TRUE)
+
+#b. The mean 
